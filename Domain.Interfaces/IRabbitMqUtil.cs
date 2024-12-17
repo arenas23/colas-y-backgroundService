@@ -4,8 +4,8 @@ namespace Domain.Interfaces.RabbitMqUtil
 {
     public interface IRabbitMqUtil
     {
-        Task PublishMessageQueue(string routingKey, byte[] body);
-        //Task ListenMessageQueue(IChannel channel, string routingkey, CancellationToken cancellationToken);
-        Task ListenToQueueAsync(IChannel channel, CancellationToken cancellationToken);
+        Task Publish<T>(IChannel channel, string queue, T message);
+        Task ListenToTransactionQueueAsync(IChannel channel, string transactionQueue, string retryQueue, CancellationToken cancellationToken);
+        Task ListenToTransactionRetryQueueAsync(IChannel channel, string queue, CancellationToken cancellationToken);
     }
 }
