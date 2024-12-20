@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="3.1.0" />
     <PackageReference Include="RabbitMQ.Client" Version="7.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
@@ -14,6 +15,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Application\Application.Services.csproj" />
     <ProjectReference Include="..\Domain.Interfaces\Domain.Interfaces.csproj" />
+    <ProjectReference Include="..\Infrastructure.DependencyInjection\Infrastructure.DependencyInjection.csproj" />
+    <ProjectReference Include="..\Infrastructure.MongoRepositories\Infrastructure.MongoDB.csproj" />
     <ProjectReference Include="..\Infrastructure.RabbitMqUtil\Infrastructure.RabbitMqUtil.csproj" />
   </ItemGroup>
 

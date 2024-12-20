@@ -29,5 +29,20 @@ namespace AppiRabbitMQSender.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult Get()
+        {
+            try
+            {
+                _service.ChangeConcurrency();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, "no se pudo cambiar: "+ ex.Message);
+            }
+        }
+
     }
 }

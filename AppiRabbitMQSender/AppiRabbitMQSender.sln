@@ -20,9 +20,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentatio
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{E3B74091-4DC5-4273-8DDF-4F1A415E6888}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.RabbitMqUtil", "..\Infrastructure.RabbitMqUtil\Infrastructure.RabbitMqUtil.csproj", "{78040D04-06E6-421E-AAEB-8C69EA78AC70}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure.RabbitMqUtil", "..\Infrastructure.RabbitMqUtil\Infrastructure.RabbitMqUtil.csproj", "{78040D04-06E6-421E-AAEB-8C69EA78AC70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain.Interfaces", "..\Domain.Interfaces\Domain.Interfaces.csproj", "{6FD03ACD-530D-4E77-95BC-195BA918A8B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain.Interfaces", "..\Domain.Interfaces\Domain.Interfaces.csproj", "{6FD03ACD-530D-4E77-95BC-195BA918A8B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.MongoRepositories", "..\Application.MongoRepositories\Application.MongoRepositories.csproj", "{EF976A3A-8B77-4EAA-B004-1315E3ED9FDE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.MongoDB", "..\Infrastructure.MongoRepositories\Infrastructure.MongoDB.csproj", "{00CDFFAB-8B86-4D46-A8C7-58DDAF76488E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.DependencyInjection", "..\Infrastructure.DependencyInjection\Infrastructure.DependencyInjection.csproj", "{7510A32F-470C-4F3D-BCF5-054263FE5F0B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +56,18 @@ Global
 		{6FD03ACD-530D-4E77-95BC-195BA918A8B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FD03ACD-530D-4E77-95BC-195BA918A8B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6FD03ACD-530D-4E77-95BC-195BA918A8B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF976A3A-8B77-4EAA-B004-1315E3ED9FDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF976A3A-8B77-4EAA-B004-1315E3ED9FDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF976A3A-8B77-4EAA-B004-1315E3ED9FDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF976A3A-8B77-4EAA-B004-1315E3ED9FDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00CDFFAB-8B86-4D46-A8C7-58DDAF76488E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00CDFFAB-8B86-4D46-A8C7-58DDAF76488E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00CDFFAB-8B86-4D46-A8C7-58DDAF76488E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00CDFFAB-8B86-4D46-A8C7-58DDAF76488E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7510A32F-470C-4F3D-BCF5-054263FE5F0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7510A32F-470C-4F3D-BCF5-054263FE5F0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7510A32F-470C-4F3D-BCF5-054263FE5F0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7510A32F-470C-4F3D-BCF5-054263FE5F0B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +78,9 @@ Global
 		{638D044A-FD42-4216-88BA-F454BEE22D70} = {1CF29826-1909-47BC-B8EE-A551955C8F56}
 		{78040D04-06E6-421E-AAEB-8C69EA78AC70} = {E3B74091-4DC5-4273-8DDF-4F1A415E6888}
 		{6FD03ACD-530D-4E77-95BC-195BA918A8B1} = {1CF29826-1909-47BC-B8EE-A551955C8F56}
+		{EF976A3A-8B77-4EAA-B004-1315E3ED9FDE} = {03374540-60A7-4FED-AB9E-125570C892A7}
+		{00CDFFAB-8B86-4D46-A8C7-58DDAF76488E} = {E3B74091-4DC5-4273-8DDF-4F1A415E6888}
+		{7510A32F-470C-4F3D-BCF5-054263FE5F0B} = {E3B74091-4DC5-4273-8DDF-4F1A415E6888}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {163B4FB5-D123-4558-BF64-5132A714D9E3}

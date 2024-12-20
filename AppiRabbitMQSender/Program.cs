@@ -1,7 +1,10 @@
 using Application.Services;
 using Domain.Interfaces;
-using Domain.Interfaces.RabbitMqUtil;
+using Infrastructure.DependencyInjection;
+using Infrastructure.MongoDB.Config;
 using Infrastructure.RabbitMqUtil;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,10 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<ISenderService,SenderService>();
-//builder.Services.AddSingleton<IRabbitMqUtil, RabbitMqUtil>();
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
-builder.Services.AddSingleton<IRabbitMqUtil, RabbitMqUtil>()
-    .AddHostedService<RabbitMqService>();
+
+
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
