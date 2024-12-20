@@ -55,6 +55,7 @@ namespace Infrastructure.DependencyInjection
             services.AddSingleton<RetryTransactionConsumer>();
             services.AddSingleton<IRabbitMqSettingsRepository, RabbitMqSettingsRepository>();
             services.AddHostedService<MessageProccesingService>();
+            services.AddSingleton<MessageProccesingService>();
             services.AddSingleton<MessageRetryProcessingService>();
             services.AddHostedService<MessageRetryProcessingService>();
             return services;

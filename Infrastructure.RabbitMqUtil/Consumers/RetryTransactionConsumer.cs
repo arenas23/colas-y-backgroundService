@@ -115,7 +115,7 @@ namespace Infrastructure.RabbitMqUtil.Consumers
 
         public async Task Prendalo(CancellationToken cancelationToken)
         {
-            await _channelManager.InitializeChannelsAsync(cancelationToken);
+            await _channelManager.InitializeRetryTransactionChannel(cancelationToken);
         }
     }
 }

@@ -44,7 +44,6 @@ namespace Infrastructure.RabbitMqUtil
         public async Task CloseChannels()
         {
             await RetryChannel.CloseAsync();
-            await _connection.CloseAsync();
         }
 
         public async Task CloseTransactionChannel()
@@ -55,6 +54,20 @@ namespace Infrastructure.RabbitMqUtil
         public async Task CloseRetryTransactionChannel()
         {
             await RetryChannel.CloseAsync();
+        }
+
+        public async Task InitializeTransactionChannel(CancellationToken cancellationToken)
+        {
+            TransactionChannel = await _connection.CreateChannelAsync(null, cancellationToken);
+            await TransactionChannel.QueueDeclareAsync(_settings.TransactionChannel.Queue, false, false, false, null, false, cancellationToken);
+            await TransactionChannel.BasicQosAsync(0, 1, false, cancellationToken);
+        }
+
+        public async Task InitializeRetryTransactionChannel(CancellationToken cancellationToken)
+        {
+            RetryChannel = await _connection.CreateChannelAsync(null, cancellationToken);
+            await RetryChannel.QueueDeclareAsync(_settings.TransactionChannel.Queue, false, false, false, null, false, cancellationToken);
+            await RetryChannel.BasicQosAsync(0, 1, false, cancellationToken);
         }
     }
 }

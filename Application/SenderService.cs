@@ -52,6 +52,7 @@ namespace Services
         public async Task ChangeConcurrency()
         {
             var messageRetryService = _serviceProvider.GetRequiredService<MessageRetryProcessingService>();
+            var transactionService = _serviceProvider.GetRequiredService<MessageProccesingService>();
 
             // Crear un token de cancelación
             var cancellationTokenSource = new CancellationTokenSource();
@@ -59,6 +60,7 @@ namespace Services
 
             // Detener el servicio de fondo MessageRetryProcessingService
             await messageRetryService.StopAsync(cancellationToken);
+            await transactionService.StopAsync(cancellationToken);
 
         }
         public async Task TurnOn()
