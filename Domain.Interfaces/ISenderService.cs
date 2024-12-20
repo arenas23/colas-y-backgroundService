@@ -10,6 +10,7 @@ namespace Domain.Interfaces
     public interface ISenderService
     {
         Task SendMessageToQueue(PeajeRequest message);
-        void ChangeConcurrency();
+        Task ChangeConcurrency();
+        Task TurnOn();
     }
 }

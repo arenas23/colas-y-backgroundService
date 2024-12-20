@@ -3,6 +3,7 @@ using Domain.Interfaces;
 using Infrastructure.DependencyInjection;
 using Infrastructure.MongoDB.Config;
 using Infrastructure.RabbitMqUtil;
+using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Services;
@@ -12,11 +13,22 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddScoped<ISenderService,SenderService>();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddScoped<ISenderService,SenderService>();
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole(options => 
+{
+    options.FormatterName = ConsoleFormatterNames.Simple;
+});
 
-
+builder.Logging.AddSimpleConsole(options =>
+{
+    options.SingleLine = true;
+    options.TimestampFormat = "[HH:mm:ss] ";
+    options.UseUtcTimestamp = false;
+    options.IncludeScopes = true;
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

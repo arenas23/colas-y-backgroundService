@@ -43,9 +43,18 @@ namespace Infrastructure.RabbitMqUtil
 
         public async Task CloseChannels()
         {
-            await TransactionChannel?.CloseAsync();
-            await RetryChannel?.CloseAsync();
-            await _connection?.CloseAsync();
+            await RetryChannel.CloseAsync();
+            await _connection.CloseAsync();
+        }
+
+        public async Task CloseTransactionChannel()
+        {
+            await TransactionChannel.CloseAsync();
+        }
+
+        public async Task CloseRetryTransactionChannel()
+        {
+            await RetryChannel.CloseAsync();
         }
     }
 }

@@ -10,6 +10,9 @@ using Domain.Interfaces.Repositories;
 using Infrastructure.MongoDB.Repositories;
 using Infrastructure.RabbitMqUtil.Config;
 using Microsoft.Extensions.Hosting;
+using Infrastructure.RabbitMqUtil.Consumers;
+using Domain.Interfaces.Consumers;
+using Domain.Interfaces.Publicer;
 
 namespace Infrastructure.DependencyInjection
 {
@@ -47,9 +50,12 @@ namespace Infrastructure.DependencyInjection
             services.Configure<RabbitMqSettings>(configuration.GetSection(nameof(RabbitMqSettings)));
 
             services.AddSingleton<ChannelManager>();
-            services.AddSingleton<IMessageProcessor, MessageProcessor>();
+            services.AddSingleton<Publisher>();
+            services.AddSingleton<TransactionConsumer>();
+            services.AddSingleton<RetryTransactionConsumer>();
             services.AddSingleton<IRabbitMqSettingsRepository, RabbitMqSettingsRepository>();
             services.AddHostedService<MessageProccesingService>();
+            services.AddSingleton<MessageRetryProcessingService>();
             services.AddHostedService<MessageRetryProcessingService>();
             return services;
         }

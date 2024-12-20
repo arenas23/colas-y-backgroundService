@@ -15,11 +15,11 @@ namespace AppiRabbitMQSender.Controllers
         }
         // POST api/<SenderController>
         [HttpPost]
-        public IActionResult Post([FromBody] PeajeRequest value)
+        public async Task<IActionResult> Post([FromBody] PeajeRequest value)
         {
             try
             {
-                _service.SendMessageToQueue(value);
+                await _service.SendMessageToQueue(value);
                 return Ok("mensaje enviado");
             }
             catch (Exception ex)
@@ -30,17 +30,32 @@ namespace AppiRabbitMQSender.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> parar()
         {
             try
             {
-                _service.ChangeConcurrency();
-                return Ok();
+                await _service.ChangeConcurrency();
+                return Ok("servicio detenido");
             }
             catch (Exception ex)
             {
 
-                return StatusCode(500, "no se pudo cambiar: "+ ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("prender")]
+        public async Task<IActionResult> Encender()
+        {
+            try
+            {
+                await _service.TurnOn();
+                return Ok("se prendio esto");
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, ex.Message);
             }
         }
 

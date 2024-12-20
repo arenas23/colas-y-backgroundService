@@ -9,11 +9,20 @@ namespace Domain.Entities.Helpers
 {
     public static class MessageHelper
     {
-        public static T DeserializeMessage<T>(ReadOnlyMemory<byte> messageBytes)
+        public static T DeserializeMessage<T>(byte[] messageBytes)
         {
-            string jsonContent = Encoding.UTF8.GetString(messageBytes.ToArray());
-            var deserializedMessage = JsonSerializer.Deserialize<T>(jsonContent);
-            return deserializedMessage;
+            try
+            {
+                string jsonContent = Encoding.UTF8.GetString(messageBytes);
+                var deserializedMessage = JsonSerializer.Deserialize<T>(jsonContent);
+                return deserializedMessage;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
+           
         }
         public static byte[] SerializeMessage<T>(T message)
         {
