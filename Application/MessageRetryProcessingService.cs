@@ -8,10 +8,10 @@ namespace Application.Services
 {
     public class MessageRetryProcessingService:BackgroundService
     {
-        private readonly RetryTransactionConsumer _messageProcessor;
-        public MessageRetryProcessingService(RetryTransactionConsumer messageProcessor)
+        private readonly RetryTransactionConsumer _consumer;
+        public MessageRetryProcessingService(RetryTransactionConsumer consumer)
         {
-            _messageProcessor= messageProcessor;
+            _consumer = consumer;
         }
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
@@ -19,14 +19,12 @@ namespace Application.Services
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await _messageProcessor.ListenToQueueAsync(stoppingToken);
-            //await Task.WhenAny(retryTask);
-            //await Task.Delay(Timeout.Infinite, stoppingToken);
+            await _consumer.ListenToQueueAsync(stoppingToken);
         }
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
                 await base.StopAsync(cancellationToken);
-                await _messageProcessor.CloseChannels();
+                await _consumer.CloseChannel();
         }
     }
 }

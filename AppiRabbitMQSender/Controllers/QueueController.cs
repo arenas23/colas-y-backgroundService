@@ -1,16 +1,16 @@
 ﻿
 using Domain.Entities.Request;
-using Domain.Interfaces;
+using Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AppiRabbitMQSender.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SenderController : ControllerBase
+    public class QueueController : ControllerBase
     {
-        private readonly ISenderService _service;
-        public SenderController(ISenderService senderService) {
+        private readonly IQueueService _service;
+        public QueueController(IQueueService senderService) {
             _service = senderService;
         }
         // POST api/<SenderController>
@@ -29,13 +29,13 @@ namespace AppiRabbitMQSender.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> parar()
+        [HttpGet("stop")]
+        public async Task<IActionResult> StopQueues()
         {
             try
             {
-                await _service.ChangeConcurrency();
-                return Ok("servicio detenido");
+                await _service.StopConsumers();
+                return Ok("Servicios detenidos");
             }
             catch (Exception ex)
             {
@@ -44,17 +44,16 @@ namespace AppiRabbitMQSender.Controllers
             }
         }
 
-        [HttpGet("prender")]
+        [HttpGet("start")]
         public async Task<IActionResult> Encender()
         {
             try
             {
-                await _service.TurnOn();
-                return Ok("se prendio esto");
+                await _service.TurnOnConsumers();
+                return Ok("Servicios arriba");
             }
             catch (Exception ex)
             {
-
                 return StatusCode(500, ex.Message);
             }
         }

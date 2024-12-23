@@ -15,7 +15,7 @@ namespace Domain.Entities.Helpers
             {
                 string jsonContent = Encoding.UTF8.GetString(messageBytes);
                 var deserializedMessage = JsonSerializer.Deserialize<T>(jsonContent);
-                return deserializedMessage;
+                return deserializedMessage!;
             }
             catch (Exception ex)
             {
@@ -29,6 +29,22 @@ namespace Domain.Entities.Helpers
             var messageString = JsonSerializer.Serialize(message);
             var messageBytes = Encoding.UTF8.GetBytes(messageString);
             return messageBytes;
+        }
+
+        public static async Task WaitToRetry(int retries, CancellationToken cancelattionToken)
+        {
+            if (retries <= 3)
+            {
+                await Task.Delay(5000, cancelattionToken);
+            }
+            else if (retries <= 6)
+            {
+                await Task.Delay(10000, cancelattionToken);
+            }
+            else
+            {
+                await Task.Delay(15000, cancelattionToken);
+            }
         }
     }
 }

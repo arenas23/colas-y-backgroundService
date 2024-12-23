@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Infrastructure.RabbitMqUtil
@@ -15,13 +16,15 @@ namespace Infrastructure.RabbitMqUtil
         private IConnection _connection;
         public IChannel TransactionChannel { get; private set; }
         public IChannel RetryChannel { get; private set; }
+        public BasicProperties MessageProperties { get; private set; }
         public ChannelManager(IOptions<RabbitMqSettings> settings)
         {
             _settings = settings.Value;
             InitializeChannelsAsync(CancellationToken.None).Wait();
+            MessageProperties = new() {Persistent = true };
         }
 
-        public async Task InitializeChannelsAsync(CancellationToken cancellationToken)
+        private async Task InitializeChannelsAsync(CancellationToken cancellationToken)
         {
             var factory = new ConnectionFactory
             {
@@ -32,18 +35,8 @@ namespace Infrastructure.RabbitMqUtil
 
             _connection = await factory.CreateConnectionAsync(cancellationToken);
 
-            TransactionChannel = await _connection.CreateChannelAsync(null, cancellationToken);
-            await TransactionChannel.QueueDeclareAsync(_settings.TransactionChannel.Queue, false, false, false, null, false, cancellationToken);
-            await TransactionChannel.BasicQosAsync(0, _settings.TransactionChannel.ConcurrentMessages, false, cancellationToken);
-
-            RetryChannel = await _connection.CreateChannelAsync(null, cancellationToken);
-            await RetryChannel.QueueDeclareAsync(_settings.RetryChannel.Queue, false, false, false, null, false, cancellationToken);
-            await RetryChannel.BasicQosAsync(0, _settings.RetryChannel.ConcurrentMessages, false, cancellationToken);
-        }
-
-        public async Task CloseChannels()
-        {
-            await RetryChannel.CloseAsync();
+            await CreateTransactionChannelAsync(_settings.TransactionChannel.ConcurrentMessages, cancellationToken);
+            await CreateRetryTransactionChannelAsync(_settings.RetryChannel.ConcurrentMessages, cancellationToken);
         }
 
         public async Task CloseTransactionChannel()
@@ -56,18 +49,29 @@ namespace Infrastructure.RabbitMqUtil
             await RetryChannel.CloseAsync();
         }
 
-        public async Task InitializeTransactionChannel(CancellationToken cancellationToken)
+        public async Task InitializeTransactionChannel(ushort concurrentMessages, CancellationToken cancellationToken)
         {
-            TransactionChannel = await _connection.CreateChannelAsync(null, cancellationToken);
-            await TransactionChannel.QueueDeclareAsync(_settings.TransactionChannel.Queue, false, false, false, null, false, cancellationToken);
-            await TransactionChannel.BasicQosAsync(0, 1, false, cancellationToken);
+            await CreateTransactionChannelAsync(concurrentMessages, cancellationToken);
         }
 
-        public async Task InitializeRetryTransactionChannel(CancellationToken cancellationToken)
+        public async Task InitializeRetryTransactionChannel(ushort concurrentMessages, CancellationToken cancellationToken)
+        {
+           await CreateRetryTransactionChannelAsync(concurrentMessages, cancellationToken);
+        }
+
+        private async Task CreateTransactionChannelAsync(ushort concurrentMessages, CancellationToken cancellationToken)
+        {
+           
+            TransactionChannel = await _connection.CreateChannelAsync(null, cancellationToken);
+            await TransactionChannel.QueueDeclareAsync(_settings.TransactionChannel.Queue, true, false, false, null, false, cancellationToken);
+            await TransactionChannel.BasicQosAsync(0, concurrentMessages, false, cancellationToken);
+          
+        }
+        private async Task CreateRetryTransactionChannelAsync(ushort concurrentMessages, CancellationToken cancellationToken)
         {
             RetryChannel = await _connection.CreateChannelAsync(null, cancellationToken);
-            await RetryChannel.QueueDeclareAsync(_settings.TransactionChannel.Queue, false, false, false, null, false, cancellationToken);
-            await RetryChannel.BasicQosAsync(0, 1, false, cancellationToken);
+            await RetryChannel.QueueDeclareAsync(_settings.RetryChannel.Queue, true, false, false, null, false, cancellationToken);
+            await RetryChannel.BasicQosAsync(0, concurrentMessages, false, cancellationToken);  
         }
     }
 }

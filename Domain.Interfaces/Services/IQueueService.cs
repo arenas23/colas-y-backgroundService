@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Interfaces
+namespace Domain.Interfaces.Services
 {
-    public interface ISenderService
+    public interface IQueueService
     {
         Task SendMessageToQueue(PeajeRequest message);
-        Task ChangeConcurrency();
-        Task TurnOn();
+        Task StopConsumers();
+        Task TurnOnConsumers();
     }
 }

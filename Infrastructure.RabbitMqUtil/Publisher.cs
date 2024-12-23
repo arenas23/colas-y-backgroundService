@@ -29,7 +29,7 @@ namespace Infrastructure.RabbitMqUtil
         public async Task Publish<T>(T message)
         {
             var body = MessageHelper.SerializeMessage(message);
-            await _channelManager.TransactionChannel.BasicPublishAsync(string.Empty, _settings.TransactionChannel.Queue, body);
+            await _channelManager.TransactionChannel.BasicPublishAsync(string.Empty, _settings.TransactionChannel.Queue, true, _channelManager.MessageProperties, body);
         }
         
     }

@@ -8,10 +8,10 @@ namespace Application.Services
 {
     public class MessageProccesingService : BackgroundService
     {
-        private readonly TransactionConsumer _messageProcessor;
-        public MessageProccesingService(TransactionConsumer messageProcessor)
+        private readonly TransactionConsumer _consumer;
+        public MessageProccesingService(TransactionConsumer consumer)
         {
-            _messageProcessor = messageProcessor;
+            _consumer = consumer;
         }
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
@@ -20,13 +20,12 @@ namespace Application.Services
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await _messageProcessor.ListenToQueueAsync(stoppingToken);
-            //await Task.Delay(Timeout.Infinite ,stoppingToken);
+            await _consumer.ListenToQueueAsync(stoppingToken);
         }
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             await base.StopAsync(cancellationToken);
-            await _messageProcessor.CloseChannels();
+            await _consumer.CloseChannel();
         }
 
     }

@@ -2,13 +2,16 @@
 using Domain.Entities.Helpers;
 using Domain.Entities.Request;
 using Domain.Interfaces.Consumers;
+using Domain.Interfaces.Dian;
 using Domain.Interfaces.Repositories;
 using Infrastructure.RabbitMqUtil.Config;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -19,39 +22,34 @@ namespace Infrastructure.RabbitMqUtil.Consumers
 {
     public class TransactionConsumer : IConsumer
     {
-        private readonly SemaphoreSlim _rateLimiter;
+        private SemaphoreSlim _rateLimiter;
         private readonly RabbitMqSettings _settings;
         private readonly ChannelManager _channelManager;
-        private readonly IRabbitMqSettingsRepository _settingsRepository;
-        private const string URL_API = "http://localhost:5207/api/prueba";
+        private readonly IServiceProvider _serviceProvider;
 
-        public TransactionConsumer(IOptions<RabbitMqSettings> settings, ChannelManager channelManager, IRabbitMqSettingsRepository settingsRepository)
+        public TransactionConsumer(IOptions<RabbitMqSettings> settings, ChannelManager channelManager, IServiceProvider serviceProvider)
         {
             _rateLimiter = new(settings.Value.TransactionChannel.ConcurrentMessages, settings.Value.TransactionChannel.ConcurrentMessages); ;
             _settings = settings.Value;
             _channelManager = channelManager;
-            _settingsRepository = settingsRepository;
+            _serviceProvider = serviceProvider;
         }
         public async Task ListenToQueueAsync(CancellationToken cancellationToken)
         {
             var consumer = new AsyncEventingBasicConsumer(_channelManager.TransactionChannel);
             var tasks = new List<Task>();
-
+            Console.WriteLine("nueva config transaction" + _rateLimiter.CurrentCount);
             consumer.ReceivedAsync += async (model, ea) =>
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
                 await _rateLimiter.WaitAsync(cancellationToken);
-                tasks.Add(ProcessTransactionAsync(ea));
+                tasks.Add(ProcessTransactionAsync(ea, cancellationToken));
             };
 
             await _channelManager.TransactionChannel.BasicConsumeAsync(_settings.TransactionChannel.Queue, false, consumer, cancellationToken);
             Console.WriteLine("Started listening to the TransactionQueue.");
         }
 
-        private async Task ProcessTransactionAsync(BasicDeliverEventArgs ea)
+        private async Task ProcessTransactionAsync(BasicDeliverEventArgs ea, CancellationToken cancellationToken)
         {
             var message = ea.Body.ToArray();
 
@@ -59,23 +57,24 @@ namespace Infrastructure.RabbitMqUtil.Consumers
             {
                 
                 var transactionMessage = MessageHelper.DeserializeMessage<TransactionMessageDto>(message);
-                bool wasSent = await SendToDian(transactionMessage.Payload);
+                var dianApi = _serviceProvider.GetRequiredService<IDianApi>(); 
+                bool wasSent = await dianApi.SendToDian(transactionMessage.Payload, cancellationToken);
                 if (!wasSent)
                 {
-                    await EnqueueToRetryQueue(transactionMessage);
-                    await _channelManager.TransactionChannel.BasicNackAsync(ea.DeliveryTag, false, false);
+                    await EnqueueToRetryQueue(transactionMessage, cancellationToken);
+                    await _channelManager.TransactionChannel.BasicNackAsync(ea.DeliveryTag, false, false, cancellationToken);
                 }
                 else
                 {
-                    await _channelManager.TransactionChannel.BasicAckAsync(ea.DeliveryTag, false);
+                    await _channelManager.TransactionChannel.BasicAckAsync(ea.DeliveryTag, false, cancellationToken);
                     Console.WriteLine("TRANSACCION PROCESADA");
                 }
             }
             catch (Exception ex)
             {
-                await _channelManager.RetryChannel.BasicPublishAsync(string.Empty, _settings.RetryChannel.Queue, message);
-                await _channelManager.TransactionChannel.BasicNackAsync(ea.DeliveryTag, false, false);
-                Console.WriteLine("ERROR API DIAN: ");
+                await _channelManager.RetryChannel.BasicPublishAsync(string.Empty, _settings.RetryChannel.Queue, true, _channelManager.MessageProperties, message,cancellationToken);
+                await _channelManager.TransactionChannel.BasicNackAsync(ea.DeliveryTag, false, false, cancellationToken);
+                Console.WriteLine("ERROR API DIAN: "+ ex.Message);
             }
             finally
             {
@@ -85,33 +84,24 @@ namespace Infrastructure.RabbitMqUtil.Consumers
 
         }
 
-        private async Task EnqueueToRetryQueue(TransactionMessageDto transaction)
+        private async Task EnqueueToRetryQueue(TransactionMessageDto transaction, CancellationToken cancellationToken)
         {
             transaction.RetryCount += 1;
             var message = MessageHelper.SerializeMessage(transaction);
-            await _channelManager.RetryChannel.BasicPublishAsync(string.Empty, _settings.RetryChannel.Queue, message);
+            await _channelManager.RetryChannel.BasicPublishAsync(string.Empty, _settings.RetryChannel.Queue,true, _channelManager.MessageProperties, message, cancellationToken);
         }
 
-        public async Task CloseChannels()
+       
+
+        public async Task CloseChannel()
         {
-            
             await _channelManager.CloseTransactionChannel();
-            
         }
 
-        private async Task<bool> SendToDian(PeajeRequest transaction)
+        public async Task OpenChannel(ushort concurrentMessages, CancellationToken cancelationToken)
         {
-            using var client = new HttpClient();
-            using var request = new HttpRequestMessage(HttpMethod.Post, URL_API);
-            var jsonBody = JsonSerializer.Serialize(transaction);
-            request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-            using var response = await client.SendAsync(request);
-            return response.IsSuccessStatusCode;
-        }
-
-        public async Task Prendalo(CancellationToken cancelationToken)
-        {
-            await _channelManager.InitializeTransactionChannel(cancelationToken);
+            _rateLimiter = new(concurrentMessages, concurrentMessages);
+            await _channelManager.InitializeTransactionChannel(concurrentMessages, cancelationToken);
         }
 
     }

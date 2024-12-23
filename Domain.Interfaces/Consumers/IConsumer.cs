@@ -9,7 +9,7 @@ namespace Domain.Interfaces.Consumers
     public interface IConsumer
     {
         Task ListenToQueueAsync(CancellationToken cancellationToken);
-        Task CloseChannels();
-        Task Prendalo(CancellationToken cancelationToken);
+        Task CloseChannel();
+        Task OpenChannel(ushort concurrentMessages, CancellationToken cancelationToken);
     }
 }

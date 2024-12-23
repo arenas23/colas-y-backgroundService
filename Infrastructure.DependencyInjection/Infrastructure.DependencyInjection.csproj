@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Application\Application.Services.csproj" />
+    <ProjectReference Include="..\Infrastructure.External.Services\Infrastructure.External.Services.csproj" />
     <ProjectReference Include="..\Infrastructure.MongoRepositories\Infrastructure.MongoDB.csproj" />
     <ProjectReference Include="..\Infrastructure.RabbitMqUtil\Infrastructure.RabbitMqUtil.csproj" />
   </ItemGroup>

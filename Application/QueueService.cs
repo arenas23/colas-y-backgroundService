@@ -2,8 +2,9 @@
 using Application.Services;
 using Domain.Entities.Dto;
 using Domain.Entities.Request;
-using Domain.Interfaces;
 using Domain.Interfaces.Publicer;
+using Domain.Interfaces.Repositories;
+using Domain.Interfaces.Services;
 using Infrastructure.RabbitMqUtil;
 using Infrastructure.RabbitMqUtil.Consumers;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,19 +13,22 @@ using Microsoft.Extensions.Hosting;
 
 namespace Services
 {
-    public class SenderService: ISenderService
+    public class QueueService: IQueueService
     {
         private readonly Publisher _messagePublisher;
         private readonly IServiceProvider _serviceProvider;
-        private readonly RetryTransactionConsumer _consumer;
+        private readonly RetryTransactionConsumer _retryConsumer;
+        private readonly TransactionConsumer _transactionConsumer;
+        private readonly IRabbitMqSettingsRepository _rabbitMqSettingsRepository;
         private Random _random;
-        public SenderService(Publisher messagePublisher, IServiceProvider serviceProvider, RetryTransactionConsumer consumer)
+        public QueueService(Publisher messagePublisher, IServiceProvider serviceProvider, RetryTransactionConsumer retryConsumer, TransactionConsumer transactionConsumer, IRabbitMqSettingsRepository rabbitMqSettingsRepository)
         {
+            _random = new Random();
             _messagePublisher = messagePublisher;
             _serviceProvider = serviceProvider;
-            _consumer = consumer;
-            _random = new Random();
-            
+            _retryConsumer = retryConsumer;
+            _transactionConsumer = transactionConsumer;
+            _rabbitMqSettingsRepository = rabbitMqSettingsRepository;
         }
 
         public async Task SendMessageToQueue(PeajeRequest request)
@@ -49,31 +53,31 @@ namespace Services
             Console.WriteLine("enviado");
         }
 
-        public async Task ChangeConcurrency()
+        public async Task StopConsumers()
         {
-            var messageRetryService = _serviceProvider.GetRequiredService<MessageRetryProcessingService>();
+            var retryService = _serviceProvider.GetRequiredService<MessageRetryProcessingService>();
             var transactionService = _serviceProvider.GetRequiredService<MessageProccesingService>();
 
-            // Crear un token de cancelación
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
-            // Detener el servicio de fondo MessageRetryProcessingService
-            await messageRetryService.StopAsync(cancellationToken);
+            await retryService.StopAsync(cancellationToken);
             await transactionService.StopAsync(cancellationToken);
 
         }
-        public async Task TurnOn()
+        public async Task TurnOnConsumers()
         {
-            var messageRetryService = _serviceProvider.GetRequiredService<MessageRetryProcessingService>();
+            var retryService = _serviceProvider.GetRequiredService<MessageRetryProcessingService>();
+            var transactionService = _serviceProvider.GetRequiredService<MessageProccesingService>();
 
-            // Crear un token de cancelación
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
-            await _consumer.Prendalo(cancellationToken);
+            var settings = await _rabbitMqSettingsRepository.RetrieveRabbitMqSettings();
+            await _retryConsumer.OpenChannel(settings.RetryConcurrentMessages, cancellationToken);
+            await _transactionConsumer.OpenChannel(settings.TransactionConcurrentMessages, cancellationToken);
 
-            // Detener el servicio de fondo MessageRetryProcessingService
-            await messageRetryService.StartAsync(cancellationToken);
+            await retryService.StartAsync(cancellationToken);
+            await transactionService.StartAsync(cancellationToken);
 
         }
     }

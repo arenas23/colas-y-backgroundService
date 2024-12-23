@@ -13,6 +13,8 @@ using Microsoft.Extensions.Hosting;
 using Infrastructure.RabbitMqUtil.Consumers;
 using Domain.Interfaces.Consumers;
 using Domain.Interfaces.Publicer;
+using Domain.Interfaces.Dian;
+using Infrastructure.External.Services.Dian;
 
 namespace Infrastructure.DependencyInjection
 {
@@ -20,6 +22,7 @@ namespace Infrastructure.DependencyInjection
     {
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddExternalServices();
             services.AddMongoDBServices(configuration);
             services.AddRabbitMQServices(configuration);
             return services;
@@ -45,6 +48,12 @@ namespace Infrastructure.DependencyInjection
             return services;
         }
 
+        private static IServiceCollection AddExternalServices(this IServiceCollection services)
+        {
+            services.AddTransient<IDianApi, DianApi>();
+            return services;
+        }
+
         private static IServiceCollection AddRabbitMQServices( this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<RabbitMqSettings>(configuration.GetSection(nameof(RabbitMqSettings)));
@@ -53,7 +62,7 @@ namespace Infrastructure.DependencyInjection
             services.AddSingleton<Publisher>();
             services.AddSingleton<TransactionConsumer>();
             services.AddSingleton<RetryTransactionConsumer>();
-            services.AddSingleton<IRabbitMqSettingsRepository, RabbitMqSettingsRepository>();
+            services.AddScoped<IRabbitMqSettingsRepository, RabbitMqSettingsRepository>();
             services.AddHostedService<MessageProccesingService>();
             services.AddSingleton<MessageProccesingService>();
             services.AddSingleton<MessageRetryProcessingService>();

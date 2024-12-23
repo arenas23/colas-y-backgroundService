@@ -1,5 +1,5 @@
 using Application.Services;
-using Domain.Interfaces;
+using Domain.Interfaces.Services;
 using Infrastructure.DependencyInjection;
 using Infrastructure.MongoDB.Config;
 using Infrastructure.RabbitMqUtil;
@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddInfrastructureServices(builder.Configuration);
-builder.Services.AddScoped<ISenderService,SenderService>();
+builder.Services.AddScoped<IQueueService,QueueService>();
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole(options => 
