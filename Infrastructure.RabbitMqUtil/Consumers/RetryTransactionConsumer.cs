@@ -35,7 +35,7 @@ namespace Infrastructure.RabbitMqUtil.Consumers
         {
             var consumer = new AsyncEventingBasicConsumer(_channelManager.RetryChannel);
             var tasks = new List<Task>();
-            Console.WriteLine("nueva config retry" + _rateLimiter.CurrentCount);
+            Console.WriteLine("nueva config retry " + _rateLimiter.CurrentCount);
             consumer.ReceivedAsync += async (model, ea) =>
             {
                 await _rateLimiter.WaitAsync(cancellationToken);

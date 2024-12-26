@@ -21,6 +21,7 @@ namespace Application.Services
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await _consumer.ListenToQueueAsync(stoppingToken);
+            await Task.Delay(Timeout.Infinite, stoppingToken);
         }
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
